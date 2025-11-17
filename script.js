@@ -1,75 +1,133 @@
 'use strict';
 
-const inputYear = document.querySelector('.input-year');
-const inputMonth = document.querySelector('.input-month');
 const inputDay = document.querySelector('.input-day');
+const inputMonth = document.querySelector('.input-month');
+const inputYear = document.querySelector('.input-year');
 
-const outputYear = document.querySelector('.output-year');
-const outputMonth = document.querySelector('.output-month');
-const outputDay = document.querySelector('.output-day');
-
-const input = document.getElementsByName('input');
 const errorDay = document.querySelector('.error-day');
 const errorMonth = document.querySelector('.error-month');
 const errorYear = document.querySelector('.error-year');
+
+const outputDay = document.querySelector('.output-day');
+const outputMonth = document.querySelector('.output-month');
+const outputYearOut = document.querySelector('.output-year');
+
 const submit = document.querySelector('.submit-btn');
 
-let isValid;
-
-inputDay.addEventListener('input', (e) => {
-  if (+inputDay.value > 31 || +inputDay.value < 1) {
-    isValid = false;
-    errorDay.textContent = 'Must be a valid day';
-    return;
-  } else {
-    isValid = true;
-    errorDay.textContent = '';
-  }
-});
-
-inputMonth.addEventListener('input', (e) => {
-  if (+inputMonth.value < 1 || +inputMonth.value > 12 ) {
-    isValid = false;
-    errorMonth.textContent = 'Must be a valid month';
-    return;
-  } else {
-    isValid = true;
-    errorMonth.textContent = '';
-  }
-});
-
-inputYear.addEventListener('input', (e) => {
-  const currentYear = new Date();
-  if (
-    +inputYear.value > currentYear.getFullYear() ||
-    +inputYear.value < currentYear.getFullYear()
-  ) {
-    isValid = false;
-    errorYear.textContent = 'Must be in the past';
-    return;
-  } else {
-    isValid = true;
-    errorYear.textContent = '';
-  }
-});
-
-submit.addEventListener('click', calcAge);
-
-function calcAge() {
-  if (isValid) {
-    let birthday = `${inputMonth.value}/${inputDay.value}/${inputYear.value}`;
-    console.log(birthday);
-    let birthdayObj = new Date(birthday);
-    let ageDiff = Date.now() - birthdayObj;
-    let ageDate = new Date(ageDiff);
-    let ageYear = ageDate.getUTCFullYear() - 1970;
-    let ageMonth = ageDate.getUTCMonth();
-    let ageDay = ageDate.getUTCDay() - 1;
-
-    outputDay.textContent = ageDay;
-    outputMonth.textContent = ageMonth;
-    outputYear.textContent = ageYear;
-  } else {
-    // alert('error');
-  }
+function isLeapYear(year) {
+  return new Date(year, 1, 29).getMonth() === 1;
 }
+
+function daysInMonth(month, year) {
+  if (month === 2) return isLeapYear(year) ? 29 : 28;
+  return [31, -1, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+}
+
+/* ----------- Validation ----------- */
+function validate() {
+  const day = Number(inputDay.value);
+  const month = Number(inputMonth.value);
+  const year = Number(inputYear.value);
+  const now = new Date().getFullYear();
+
+  let valid = true;
+
+  errorDay.textContent = '';
+  errorMonth.textContent = '';
+  errorYear.textContent = '';
+
+  if (!day) {
+    errorDay.textContent = 'Required';
+    valid = false;
+  }
+  if (!month) {
+    errorMonth.textContent = 'Required';
+    valid = false;
+  }
+  if (!year) {
+    errorYear.textContent = 'Required';
+    valid = false;
+  }
+
+  if (!valid) return false;
+
+  if (day < 1 || day > 31) {
+    errorDay.textContent = 'Must be a valid day';
+    valid = false;
+  }
+  if (month < 1 || month > 12) {
+    errorMonth.textContent = 'Must be a valid month';
+    valid = false;
+  }
+  if (year > now || year < 1) {
+    errorYear.textContent = 'Must be in the past';
+    valid = false;
+  }
+
+  if (!valid) return false;
+
+  const dim = daysInMonth(month, year);
+  if (day > dim) {
+    errorDay.textContent = 'Must be a valid date';
+    valid = false;
+  }
+
+  return valid;
+}
+
+
+function calculateAge() {
+  const b = new Date(
+    Number(inputYear.value),
+    Number(inputMonth.value) - 1,
+    Number(inputDay.value)
+  );
+  const t = new Date();
+
+  let y = t.getFullYear() - b.getFullYear();
+  let m = t.getMonth() - b.getMonth();
+  let d = t.getDate() - b.getDate();
+
+  if (d < 0) {
+    m--;
+    d += new Date(t.getFullYear(), t.getMonth(), 0).getDate();
+  }
+  if (m < 0) {
+    m += 12;
+    y--;
+  }
+
+  return { y, m, d };
+}
+
+
+function showAge({ y, m, d }) {
+  outputYearOut.textContent = y;
+  outputMonth.textContent = m;
+  outputDay.textContent = d;
+}
+
+function clearOutput() {
+  outputYearOut.textContent = '--';
+  outputMonth.textContent = '--';
+  outputDay.textContent = '--';
+}
+
+
+[inputDay, inputMonth, inputYear].forEach((el) => {
+  el.addEventListener('input', () => {
+    const ok = validate();
+    submit.disabled = !ok;
+    if (!ok) clearOutput();
+  });
+});
+
+submit.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+  showAge(calculateAge());
+});
+
+
+submit.disabled = true;
+clearOutput();
