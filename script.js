@@ -17,56 +17,38 @@ const submit = document.querySelector('.submit-btn');
 let isValid;
 
 inputDay.addEventListener('input', (e) => {
-  if (+inputDay.value > 31) {
+  if (+inputDay.value > 31 || +inputDay.value < 1) {
     isValid = false;
     errorDay.textContent = 'Must be a valid day';
     return;
   } else {
     isValid = true;
-    errorDay.textContent = '';
-  }
-  if (+inputDay.value === 0) {
-    isValid = false;
-    errorDay.textContent = 'Must be a valid day';
-    return;
-  } else {
     errorDay.textContent = '';
   }
 });
 
 inputMonth.addEventListener('input', (e) => {
-  if (+inputMonth.value > 12) {
+  if (+inputMonth.value < 1 || +inputMonth.value > 12 ) {
     isValid = false;
     errorMonth.textContent = 'Must be a valid month';
     return;
   } else {
     isValid = true;
-    errorMonth.textContent = '';
-  }
-  if (+inputMonth.value === 0) {
-    isValid = false;
-    errorMonth.textContent = 'Must be a valid month';
-    return;
-  } else {
     errorMonth.textContent = '';
   }
 });
 
 inputYear.addEventListener('input', (e) => {
   const currentYear = new Date();
-  if (+inputYear.value > currentYear.getFullYear()) {
+  if (
+    +inputYear.value > currentYear.getFullYear() ||
+    +inputYear.value < currentYear.getFullYear()
+  ) {
     isValid = false;
     errorYear.textContent = 'Must be in the past';
     return;
   } else {
     isValid = true;
-    errorYear.textContent = '';
-  }
-  if (+inputYear.value === 0) {
-    isValid = false;
-    errorYear.textContent = 'Must be a valid year';
-    return;
-  } else {
     errorYear.textContent = '';
   }
 });
